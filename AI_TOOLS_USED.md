@@ -2,8 +2,8 @@
 
 | Tool | Version / plan | Used for |
 |---|---|---|
-| Antigravity (Google agentic IDE) with Gemini 3.8 Flash High | [add your plan] | Generating the entity classes and DbContext, the seed data class, the guest UI (controllers, view models, views) and the admin area |
-| Claude (Anthropic) | [add your plan] | Planning scope and business rules, setup troubleshooting, drafting the booking service (overlap check, pricing, cancellation), reviewing the agent output, drafting these documents |
+| Antigravity (Google agentic IDE) with Gemini 3.8 Flash High | free | Generating the entity classes and DbContext, the seed data class, the guest UI (controllers, view models, views) and the admin area |
+| Claude (Anthropic) | free | Planning scope and business rules, setup troubleshooting, drafting the booking service (overlap check, pricing, cancellation), reviewing the agent output, drafting these documents |
 
 ## Most useful prompts
 
@@ -11,7 +11,7 @@
 2. "Add idempotent seed data: roles Admin and Guest, two test users, 3 room types, 8 rooms with images, 6 amenities linked to rooms. Make sure Identity is configured with AddRoles."
 3. "Build the guest-facing UI with Bootstrap 5: search form, results using BookingService.SearchAvailableAsync, room details, booking flow with anti-forgery, confirmation page, My Bookings with cancel. Do not modify BookingService."
 4. "Build the admin area under /Admin with [Authorize(Roles = "Admin")]: dashboard, room and room type CRUD, bookings list with filters and valid status transitions only. Block deleting rooms with future bookings."
-5. "Write a booking service where the overlap check and insert happen in one transaction, and explain why a row lock is needed when READ_COMMITTED_SNAPSHOT is on."
+5. (To Claude, in chat) "Write the booking service so the overlap check and insert are in one transaction, and explain why a row lock is needed when READ_COMMITTED_SNAPSHOT is on." I pasted the result in, read it through and registered it in Program.cs.
 
 ## What I changed or fixed myself
 
@@ -21,4 +21,4 @@
 - The two agents ran in parallel and one of them edited HomeController to remove an invalid attribute argument that broke the build. I rebuilt and tested the combined result before committing.
 - I checked that the admin controllers carry their own routes, so no extra route was needed in Program.cs.
 - I tested the double booking rule, the guest access block on /Admin and the admin pages by hand in the browser.
-- [Add any other bug you hit or changed yourself.]
+

@@ -59,7 +59,6 @@ Not done: payments, emails, availability calendar, image upload (rooms use image
 - The overlap lock has been reasoned through but not load tested with truly parallel requests.
 - Dates use the server's local time, so a hosted deployment would need a hotel time zone setting.
 - Image URLs point to a placeholder service, so room photos need internet access.
-- [Add anything else you noticed while testing.]
 
 ## Folder layout
 
@@ -67,3 +66,4 @@ Not done: payments, emails, availability calendar, image upload (rooms use image
     database/     HotelBookingDB.bak, HotelBookingDB.sql, ER-Diagram.png
     screenshots/  Desktop and mobile screenshots
     AI_TOOLS_USED.md
+
