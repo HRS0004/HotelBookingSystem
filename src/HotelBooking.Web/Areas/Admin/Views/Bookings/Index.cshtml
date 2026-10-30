@@ -1,0 +1,239 @@
+@model BookingListViewModel
+@{
+    ViewData["Title"] = "Manage Bookings";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-3 mb-3 border-bottom">
+    <div>
+        <h1 class="h2 mb-1 fw-bold text-dark">Bookings Management</h1>
+        <p class="text-muted mb-0">Search, filter, check-in, check-out, and manage guest reservations.</p>
+    </div>
+</div>
+
+<!-- Quick Status Filter Pills -->
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a asp-area="Admin" asp-controller="Bookings" asp-action="Index"
+       asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+       asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+       asp-route-search="@Model.Search"
+       class="btn btn-sm @(!Model.StatusFilter.HasValue ? "btn-dark" : "btn-outline-dark")">
+        All Bookings <span class="badge bg-secondary ms-1">@Model.TotalCount</span>
+    </a>
+    <a asp-area="Admin" asp-controller="Bookings" asp-action="Index"
+       asp-route-status="Confirmed"
+       asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+       asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+       asp-route-search="@Model.Search"
+       class="btn btn-sm @(Model.StatusFilter == BookingStatus.Confirmed ? "btn-primary" : "btn-outline-primary")">
+        Confirmed <span class="badge bg-primary-subtle text-primary ms-1">@Model.ConfirmedCount</span>
+    </a>
+    <a asp-area="Admin" asp-controller="Bookings" asp-action="Index"
+       asp-route-status="CheckedIn"
+       asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+       asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+       asp-route-search="@Model.Search"
+       class="btn btn-sm @(Model.StatusFilter == BookingStatus.CheckedIn ? "btn-success" : "btn-outline-success")">
+        Checked In <span class="badge bg-success-subtle text-success ms-1">@Model.CheckedInCount</span>
+    </a>
+    <a asp-area="Admin" asp-controller="Bookings" asp-action="Index"
+       asp-route-status="CheckedOut"
+       asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+       asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+       asp-route-search="@Model.Search"
+       class="btn btn-sm @(Model.StatusFilter == BookingStatus.CheckedOut ? "btn-secondary" : "btn-outline-secondary")">
+        Checked Out <span class="badge bg-secondary-subtle text-secondary ms-1">@Model.CheckedOutCount</span>
+    </a>
+    <a asp-area="Admin" asp-controller="Bookings" asp-action="Index"
+       asp-route-status="Cancelled"
+       asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+       asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+       asp-route-search="@Model.Search"
+       class="btn btn-sm @(Model.StatusFilter == BookingStatus.Cancelled ? "btn-danger" : "btn-outline-danger")">
+        Cancelled <span class="badge bg-danger-subtle text-danger ms-1">@Model.CancelledCount</span>
+    </a>
+</div>
+
+<!-- Filter Bar Card -->
+<div class="card admin-card mb-4">
+    <div class="card-body p-3">
+        <form asp-area="Admin" asp-controller="Bookings" asp-action="Index" method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-bold text-muted mb-1">Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">-- All Statuses --</option>
+                        @foreach (BookingStatus st in Enum.GetValues(typeof(BookingStatus)))
+                        {
+                            <option value="@st" selected="@(Model.StatusFilter == st)">@st</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-bold text-muted mb-1">From Date</label>
+                    <input type="date" name="fromDate" value="@Model.FromDate?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-bold text-muted mb-1">To Date</label>
+                    <input type="date" name="toDate" value="@Model.ToDate?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-bold text-muted mb-1">Search Reference or Guest</label>
+                    <input type="text" name="search" value="@Model.Search" class="form-control form-control-sm" placeholder="Ref code or email..." />
+                </div>
+
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1 fw-semibold">
+                        🔍 Filter
+                    </button>
+                    <a asp-area="Admin" asp-controller="Bookings" asp-action="Index" class="btn btn-outline-secondary btn-sm" title="Clear Filters">
+                        ✕
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bookings Table Card -->
+<div class="card admin-card">
+    <div class="card-body p-0">
+        @if (!Model.Bookings.Any())
+        {
+            <div class="p-5 text-center text-muted">
+                <h4>No bookings matched your criteria</h4>
+                <p>Try adjusting your search terms, date range, or status filter.</p>
+                <a asp-area="Admin" asp-controller="Bookings" asp-action="Index" class="btn btn-outline-primary btn-sm mt-2">Reset Filters</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Reference</th>
+                            <th>Guest Info</th>
+                            <th>Room</th>
+                            <th>Stay Dates</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th class="text-end" style="min-width: 220px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in Model.Bookings)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-bold font-monospace text-primary">@b.Reference</div>
+                                    <div class="small text-muted">Booked: @b.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">@b.GuestName</div>
+                                    <div class="small text-muted">✉️ @b.GuestEmail</div>
+                                    @if (!string.IsNullOrEmpty(b.GuestPhone))
+                                    {
+                                        <div class="small text-muted">📞 @b.GuestPhone</div>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">Room @b.RoomNumber</span>
+                                    <div class="small text-muted">@b.RoomTypeName</div>
+                                    <div class="small text-muted">👥 @b.Guests @(b.Guests == 1 ? "guest" : "guests")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@b.CheckIn.ToString("MMM dd, yyyy") &rarr; @b.CheckOut.ToString("MMM dd, yyyy")</div>
+                                    <div class="small text-muted">@b.Nights @(b.Nights == 1 ? "night" : "nights")</div>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-dark">₹@b.TotalPrice.ToString("N0")</span>
+                                </td>
+                                <td>
+                                    @switch (b.Status)
+                                    {
+                                        case BookingStatus.Confirmed:
+                                            <span class="badge badge-status-confirmed">Confirmed</span>
+                                            break;
+                                        case BookingStatus.CheckedIn:
+                                            <span class="badge badge-status-checkedin">Checked In</span>
+                                            break;
+                                        case BookingStatus.CheckedOut:
+                                            <span class="badge badge-status-checkedout">Checked Out</span>
+                                            break;
+                                        case BookingStatus.Cancelled:
+                                            <span class="badge badge-status-cancelled">Cancelled</span>
+                                            @if (b.CancelledAt.HasValue)
+                                            {
+                                                <div class="small text-muted" style="font-size: 0.75rem;">@b.CancelledAt.Value.ToString("MMM dd")</div>
+                                            }
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1 justify-content-end">
+                                        @if (b.CanCheckIn)
+                                        {
+                                            <!-- Mark Checked In -->
+                                            <form asp-area="Admin" asp-controller="Bookings" asp-action="CheckIn" asp-route-id="@b.Id"
+                                                  asp-route-status="@Model.StatusFilter"
+                                                  asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                                                  asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                                                  asp-route-search="@Model.Search"
+                                                  method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-success fw-semibold" title="Mark guest as checked in">
+                                                    Check In
+                                                </button>
+                                            </form>
+                                        }
+
+                                        @if (b.CanCheckOut)
+                                        {
+                                            <!-- Mark Checked Out -->
+                                            <form asp-area="Admin" asp-controller="Bookings" asp-action="CheckOut" asp-route-id="@b.Id"
+                                                  asp-route-status="@Model.StatusFilter"
+                                                  asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                                                  asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                                                  asp-route-search="@Model.Search"
+                                                  method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-primary fw-semibold" title="Mark guest as checked out">
+                                                    Check Out
+                                                </button>
+                                            </form>
+                                        }
+
+                                        @if (b.CanCancel)
+                                        {
+                                            <!-- Cancel via BookingService.CancelAsync -->
+                                            <form asp-area="Admin" asp-controller="Bookings" asp-action="Cancel" asp-route-id="@b.Id"
+                                                  asp-route-status="@Model.StatusFilter"
+                                                  asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                                                  asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                                                  asp-route-search="@Model.Search"
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Are you sure you want to cancel booking @b.Reference? This action cannot be undone.');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold" title="Cancel booking">
+                                                    Cancel
+                                                </button>
+                                            </form>
+                                        }
+
+                                        @if (!b.CanCheckIn && !b.CanCheckOut && !b.CanCancel)
+                                        {
+                                            <span class="text-muted small fst-italic">No actions</span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

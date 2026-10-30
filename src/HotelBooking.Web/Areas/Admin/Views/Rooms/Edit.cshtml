@@ -1,0 +1,145 @@
+@model RoomFormViewModel
+@{
+    ViewData["Title"] = $"Edit Room {Model.RoomNumber}";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-3 mb-3 border-bottom">
+    <div>
+        <h1 class="h2 mb-1 fw-bold text-dark">Edit Room @Model.RoomNumber</h1>
+        <p class="text-muted mb-0">Modify room configurations, amenities, active flag, and rates.</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0 gap-2">
+        <a asp-area="Admin" asp-controller="Rooms" asp-action="Index" class="btn btn-outline-secondary">
+            &larr; Back to Rooms
+        </a>
+        <a asp-area="Admin" asp-controller="Rooms" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+            🗑️ Delete Room
+        </a>
+    </div>
+</div>
+
+@if (Model.HasFutureConfirmedBookings)
+{
+    <div class="alert alert-info d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
+        <div>
+            <strong>ℹ️ Active Reservations:</strong> This room has <strong>@Model.FutureConfirmedBookingsCount</strong> future confirmed booking(s).
+            Deleting this room is blocked by policy; if this room needs maintenance, please <strong>deactivate</strong> it below instead.
+        </div>
+        @if (Model.IsActive)
+        {
+            <form asp-area="Admin" asp-controller="Rooms" asp-action="Deactivate" asp-route-id="@Model.Id" method="post" class="ms-3 d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-warning text-nowrap fw-semibold">
+                    Deactivate Now
+                </button>
+            </form>
+        }
+    </div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card admin-card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold text-dark">Room Information</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-area="Admin" asp-controller="Rooms" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="RoomNumber" class="form-label fw-bold">Room Number <span class="text-danger">*</span></label>
+                            <input asp-for="RoomNumber" class="form-control" />
+                            <span asp-validation-for="RoomNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="RoomTypeId" class="form-label fw-bold">Room Type <span class="text-danger">*</span></label>
+                            <select asp-for="RoomTypeId" asp-items="Model.RoomTypeOptions" class="form-select">
+                                <option value="">-- Select Room Type --</option>
+                            </select>
+                            <span asp-validation-for="RoomTypeId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Floor" class="form-label fw-bold">Floor <span class="text-danger">*</span></label>
+                            <input asp-for="Floor" class="form-control" type="number" min="0" max="100" />
+                            <span asp-validation-for="Floor" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PriceOverride" class="form-label fw-bold">Price Override (Optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input asp-for="PriceOverride" class="form-control" type="number" step="0.01" min="0" placeholder="Leave empty for base price" />
+                            </div>
+                            <span asp-validation-for="PriceOverride" class="text-danger small"></span>
+                            <div class="form-text">Overrides the standard base price of the selected room type.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label fw-bold">Image URL (Optional)</label>
+                        <input asp-for="ImageUrl" class="form-control" type="url" placeholder="https://example.com/room.jpg" />
+                        <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" id="isActiveSwitch" />
+                            <label class="form-check-label fw-bold" for="isActiveSwitch">Active & Available for Booking</label>
+                        </div>
+                        <div class="form-text">If unchecked, this room will not appear in guest search results.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold d-block mb-2">Amenities</label>
+                        <div class="p-3 bg-light rounded border">
+                            @if (!Model.AvailableAmenities.Any())
+                            {
+                                <span class="text-muted small">No amenities defined in system.</span>
+                            }
+                            else
+                            {
+                                <div class="row row-cols-2 row-cols-md-3 g-2">
+                                    @for (var i = 0; i < Model.AvailableAmenities.Count; i++)
+                                    {
+                                        var amenity = Model.AvailableAmenities[i];
+                                        var isChecked = Model.SelectedAmenityIds.Contains(amenity.Id);
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="SelectedAmenityIds" value="@amenity.Id" id="amenity_@amenity.Id" @(isChecked ? "checked" : "") />
+                                                <label class="form-check-label" for="amenity_@amenity.Id">
+                                                    @amenity.Name
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between pt-3 border-top">
+                        <a asp-area="Admin" asp-controller="Rooms" asp-action="Index" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

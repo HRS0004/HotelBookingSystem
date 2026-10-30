@@ -1,0 +1,98 @@
+@model RoomListItemViewModel
+@{
+    ViewData["Title"] = $"Delete Room {Model.RoomNumber}";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-3 mb-3 border-bottom">
+    <div>
+        <h1 class="h2 mb-1 fw-bold text-dark">Delete Room @Model.RoomNumber</h1>
+        <p class="text-muted mb-0">Confirm deletion or deactivate room.</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-area="Admin" asp-controller="Rooms" asp-action="Index" class="btn btn-outline-secondary">
+            &larr; Back to Rooms
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+        @if (Model.FutureConfirmedBookingsCount > 0)
+        {
+            <!-- Blocked Deletion State -->
+            <div class="card border-warning shadow-sm">
+                <div class="card-header bg-warning-subtle text-warning-emphasis py-3">
+                    <h5 class="mb-0 fw-bold">⚠️ Deletion Blocked: Future Bookings Exist</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="fs-5 text-dark">
+                        Room <strong>@Model.RoomNumber</strong> cannot be deleted because it has
+                        <span class="badge bg-danger fs-6">@Model.FutureConfirmedBookingsCount future confirmed booking(s)</span>.
+                    </p>
+                    <p class="text-muted">
+                        Deleting this room is blocked to protect existing guest reservations.
+                        Instead of deleting, you can <strong>deactivate</strong> this room. When deactivated, existing reservations remain intact, but new guests will not be able to book this room.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2 pt-3 border-top mt-4">
+                        <form asp-area="Admin" asp-controller="Rooms" asp-action="Deactivate" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-warning fw-semibold px-4">
+                                ⏸️ Deactivate Room @Model.RoomNumber Instead
+                            </button>
+                        </form>
+                        <a asp-area="Admin" asp-controller="Rooms" asp-action="Index" class="btn btn-outline-secondary">
+                            Cancel & Return to Rooms
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Allowed Deletion Confirmation -->
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-danger-subtle text-danger-emphasis py-3">
+                    <h5 class="mb-0 fw-bold">🗑️ Confirm Room Deletion</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-dark fs-5">
+                        Are you sure you want to permanently delete <strong>Room @Model.RoomNumber</strong>?
+                    </p>
+                    <div class="bg-light p-3 rounded mb-3 border">
+                        <div class="row g-2">
+                            <div class="col-6"><strong>Room Type:</strong> @Model.RoomTypeName</div>
+                            <div class="col-6"><strong>Floor:</strong> @Model.Floor</div>
+                            <div class="col-6"><strong>Capacity:</strong> @Model.Capacity guests</div>
+                            <div class="col-6"><strong>Price:</strong> ₹@Model.EffectivePrice.ToString("N0") / night</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small">
+                        Note: If you only want to temporarily take this room offline for cleaning or maintenance, we recommend deactivating it instead.
+                    </p>
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 border-top mt-4 gap-2">
+                        <form asp-area="Admin" asp-controller="Rooms" asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger fw-semibold px-4">
+                                Yes, Permanently Delete Room
+                            </button>
+                        </form>
+
+                        <div class="d-flex gap-2">
+                            <form asp-area="Admin" asp-controller="Rooms" asp-action="Deactivate" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-warning">
+                                    Deactivate Instead
+                                </button>
+                            </form>
+                            <a asp-area="Admin" asp-controller="Rooms" asp-action="Index" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

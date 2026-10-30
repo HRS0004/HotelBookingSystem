@@ -1,0 +1,278 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-3 mb-3 border-bottom">
+    <div>
+        <h1 class="h2 mb-1 fw-bold text-dark">Hotel Operations Dashboard</h1>
+        <p class="text-muted mb-0">Overview of today's check-ins, check-outs, room occupancy, and upcoming bookings.</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0 gap-2">
+        <a asp-area="Admin" asp-controller="Bookings" asp-action="Index" class="btn btn-outline-primary btn-sm">
+            📅 View All Bookings
+        </a>
+        <a asp-area="Admin" asp-controller="Rooms" asp-action="Create" class="btn btn-primary btn-sm">
+            ➕ Add New Room
+        </a>
+    </div>
+</div>
+
+<!-- 5 Key Metrics Cards -->
+<div class="row g-3 mb-4">
+    <!-- 1. Today's Check-ins -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="card stat-card h-100 bg-white border-start border-primary border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small text-uppercase fw-bold">Today's Check-ins</span>
+                    <span class="badge bg-primary-subtle text-primary p-2 fs-6">📥</span>
+                </div>
+                <div class="fs-2 fw-bold text-dark">@Model.TodaysCheckInsCount</div>
+                <div class="text-muted small mt-1">Arrivals scheduled today</div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <a asp-area="Admin" asp-controller="Bookings" asp-action="Index" asp-route-status="Confirmed" class="text-primary small text-decoration-none fw-semibold">
+                    View arrivals &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Today's Check-outs -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="card stat-card h-100 bg-white border-start border-warning border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small text-uppercase fw-bold">Today's Check-outs</span>
+                    <span class="badge bg-warning-subtle text-warning p-2 fs-6">📤</span>
+                </div>
+                <div class="fs-2 fw-bold text-dark">@Model.TodaysCheckOutsCount</div>
+                <div class="text-muted small mt-1">Departures scheduled today</div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <a asp-area="Admin" asp-controller="Bookings" asp-action="Index" asp-route-status="CheckedIn" class="text-warning small text-decoration-none fw-semibold">
+                    View departures &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Occupied Rooms Today -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="card stat-card h-100 bg-white border-start border-success border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small text-uppercase fw-bold">Occupied Rooms Today</span>
+                    <span class="badge bg-success-subtle text-success p-2 fs-6">🛏️</span>
+                </div>
+                <div class="fs-2 fw-bold text-dark">@Model.OccupiedRoomsCount</div>
+                <div class="text-muted small mt-1">
+                    @if (Model.TotalRoomsCount > 0)
+                    {
+                        var occupancyRate = Math.Round((double)Model.OccupiedRoomsCount / Model.TotalRoomsCount * 100, 1);
+                        <span>@occupancyRate% occupancy rate</span>
+                    }
+                    else
+                    {
+                        <span>Currently occupied</span>
+                    }
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <span class="badge bg-success-subtle text-success">In-house guests</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Upcoming Confirmed Bookings -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="card stat-card h-100 bg-white border-start border-info border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small text-uppercase fw-bold">Upcoming Confirmed</span>
+                    <span class="badge bg-info-subtle text-info p-2 fs-6">🗓️</span>
+                </div>
+                <div class="fs-2 fw-bold text-dark">@Model.UpcomingConfirmedBookingsCount</div>
+                <div class="text-muted small mt-1">Future confirmed stays</div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <a asp-area="Admin" asp-controller="Bookings" asp-action="Index" asp-route-status="Confirmed" class="text-info small text-decoration-none fw-semibold">
+                    View confirmed &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Total Rooms -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="card stat-card h-100 bg-white border-start border-secondary border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small text-uppercase fw-bold">Total Rooms</span>
+                    <span class="badge bg-secondary-subtle text-secondary p-2 fs-6">🏢</span>
+                </div>
+                <div class="fs-2 fw-bold text-dark">@Model.TotalRoomsCount</div>
+                <div class="text-muted small mt-1">@Model.ActiveRoomsCount active rooms</div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <a asp-area="Admin" asp-controller="Rooms" asp-action="Index" class="text-secondary small text-decoration-none fw-semibold">
+                    Manage rooms &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Operational Lists -->
+<div class="row g-4">
+    <!-- Today's Check-ins Panel -->
+    <div class="col-12 col-lg-6">
+        <div class="card admin-card h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-dark">Today's Check-ins (@Model.TodaysCheckIns.Count)</h5>
+                <span class="badge bg-primary">Arrivals</span>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.TodaysCheckIns.Any())
+                {
+                    <div class="p-4 text-center text-muted">
+                        <p class="mb-0">No check-ins scheduled for today.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ref / Guest</th>
+                                    <th>Room</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.TodaysCheckIns)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">@item.Reference</div>
+                                            <div class="small text-muted">@item.GuestName</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">Room @item.RoomNumber</span>
+                                            <div class="small text-muted">@item.RoomTypeName</div>
+                                        </td>
+                                        <td>
+                                            @if (item.Status == BookingStatus.CheckedIn)
+                                            {
+                                                <span class="badge badge-status-checkedin">Checked In</span>
+                                            }
+                                            else if (item.Status == BookingStatus.Confirmed)
+                                            {
+                                                <span class="badge badge-status-confirmed">Awaiting Check-in</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            @if (item.CanCheckIn)
+                                            {
+                                                <form asp-area="Admin" asp-controller="Bookings" asp-action="CheckIn" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        Check In
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success small fw-bold">✓ In-House</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Check-outs Panel -->
+    <div class="col-12 col-lg-6">
+        <div class="card admin-card h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-dark">Today's Check-outs (@Model.TodaysCheckOuts.Count)</h5>
+                <span class="badge bg-warning text-dark">Departures</span>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.TodaysCheckOuts.Any())
+                {
+                    <div class="p-4 text-center text-muted">
+                        <p class="mb-0">No check-outs scheduled for today.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ref / Guest</th>
+                                    <th>Room</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.TodaysCheckOuts)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">@item.Reference</div>
+                                            <div class="small text-muted">@item.GuestName</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">Room @item.RoomNumber</span>
+                                            <div class="small text-muted">@item.RoomTypeName</div>
+                                        </td>
+                                        <td>
+                                            @if (item.Status == BookingStatus.CheckedOut)
+                                            {
+                                                <span class="badge badge-status-checkedout">Checked Out</span>
+                                            }
+                                            else if (item.Status == BookingStatus.CheckedIn)
+                                            {
+                                                <span class="badge badge-status-checkedin">In-House</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-status-confirmed">@item.Status</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            @if (item.CanCheckOut)
+                                            {
+                                                <form asp-area="Admin" asp-controller="Bookings" asp-action="CheckOut" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-primary">
+                                                        Check Out
+                                                    </button>
+                                                </form>
+                                            }
+                                            else if (item.Status == BookingStatus.CheckedOut)
+                                            {
+                                                <span class="text-muted small">✓ Completed</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

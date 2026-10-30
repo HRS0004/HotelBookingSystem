@@ -1,0 +1,77 @@
+@model RoomTypeFormViewModel
+@{
+    ViewData["Title"] = $"Edit Room Type - {Model.Name}";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-3 mb-3 border-bottom">
+    <div>
+        <h1 class="h2 mb-1 fw-bold text-dark">Edit Room Type: @Model.Name</h1>
+        <p class="text-muted mb-0">Update pricing, guest capacity, and category details.</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-area="Admin" asp-controller="RoomTypes" asp-action="Index" class="btn btn-outline-secondary">
+            &larr; Back to Room Types
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+        <div class="card admin-card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold text-dark">Edit Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-area="Admin" asp-controller="RoomTypes" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold">Room Type Name <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="BasePrice" class="form-label fw-bold">Base Price (Per Night) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input asp-for="BasePrice" class="form-control" type="number" step="0.01" min="0.01" />
+                            </div>
+                            <span asp-validation-for="BasePrice" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Capacity" class="form-label fw-bold">Guest Capacity <span class="text-danger">*</span></label>
+                            <input asp-for="Capacity" class="form-control" type="number" min="1" max="50" />
+                            <span asp-validation-for="Capacity" class="text-danger small"></span>
+                            <div class="form-text">Maximum number of guests allowed.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label fw-bold">Description (Optional)</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between pt-3 border-top">
+                        <a asp-area="Admin" asp-controller="RoomTypes" asp-action="Index" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

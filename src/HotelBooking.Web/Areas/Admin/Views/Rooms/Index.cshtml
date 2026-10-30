@@ -1,0 +1,160 @@
+@model IEnumerable<RoomListItemViewModel>
+@{
+    ViewData["Title"] = "Manage Rooms";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-3 mb-3 border-bottom">
+    <div>
+        <h1 class="h2 mb-1 fw-bold text-dark">Hotel Rooms</h1>
+        <p class="text-muted mb-0">Manage guest rooms, pricing overrides, active statuses, and amenities.</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-area="Admin" asp-controller="Rooms" asp-action="Create" class="btn btn-primary">
+            ➕ Add New Room
+        </a>
+    </div>
+</div>
+
+<div class="card admin-card">
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="p-5 text-center text-muted">
+                <h4>No rooms found</h4>
+                <p>Click "Add New Room" above to add your first hotel room.</p>
+                <a asp-area="Admin" asp-controller="Rooms" asp-action="Create" class="btn btn-primary mt-2">Create Room</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 70px;">Image</th>
+                            <th>Room #</th>
+                            <th>Type & Capacity</th>
+                            <th>Floor</th>
+                            <th>Price / Night</th>
+                            <th>Amenities</th>
+                            <th>Status</th>
+                            <th>Future Bookings</th>
+                            <th class="text-end" style="min-width: 220px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var room in Model)
+                        {
+                            <tr class="@(!room.IsActive ? "table-secondary text-muted" : "")">
+                                <td>
+                                    @if (!string.IsNullOrEmpty(room.ImageUrl))
+                                    {
+                                        <img src="@room.ImageUrl" alt="Room @room.RoomNumber" class="rounded object-fit-cover shadow-sm" style="width: 55px; height: 42px;" onerror="this.onerror=null;this.src='/images/room-placeholder.jpg';" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light border rounded d-flex align-items-center justify-content-center text-muted" style="width: 55px; height: 42px; font-size: 0.75rem;">
+                                            No Img
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="fs-5 fw-bold text-dark">@room.RoomNumber</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@room.RoomTypeName</div>
+                                    <div class="small text-muted">👥 Up to @room.Capacity guests</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">Floor @room.Floor</span>
+                                </td>
+                                <td>
+                                    @if (room.PriceOverride.HasValue)
+                                    {
+                                        <div>
+                                            <span class="fw-bold text-primary">₹@room.PriceOverride.Value.ToString("N0")</span>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis small ms-1">Override</span>
+                                        </div>
+                                        <div class="small text-muted text-decoration-line-through">₹@room.BasePrice.ToString("N0") base</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="fw-bold text-dark">₹@room.BasePrice.ToString("N0")</div>
+                                        <div class="small text-muted">Standard rate</div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1" style="max-width: 220px;">
+                                        @if (room.AmenityNames.Any())
+                                        {
+                                            @foreach (var amenity in room.AmenityNames)
+                                            {
+                                                <span class="badge bg-secondary-subtle text-secondary-emphasis" style="font-size: 0.75rem;">@amenity</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small fst-italic">None</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (room.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (room.FutureConfirmedBookingsCount > 0)
+                                    {
+                                        <span class="badge bg-info-subtle text-info-emphasis border border-info" title="Cannot delete while future confirmed bookings exist">
+                                            @room.FutureConfirmedBookingsCount Confirmed
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted border">None</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a asp-area="Admin" asp-controller="Rooms" asp-action="Edit" asp-route-id="@room.Id" class="btn btn-outline-primary" title="Edit Room">
+                                            ✏️ Edit
+                                        </a>
+
+                                        @if (room.IsActive)
+                                        {
+                                            <form asp-area="Admin" asp-controller="Rooms" asp-action="Deactivate" asp-route-id="@room.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-warning" title="Deactivate Room">
+                                                    ⏸️ Deactivate
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-area="Admin" asp-controller="Rooms" asp-action="ToggleStatus" asp-route-id="@room.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-success" title="Activate Room">
+                                                    ▶️ Activate
+                                                </button>
+                                            </form>
+                                        }
+
+                                        <a asp-area="Admin" asp-controller="Rooms" asp-action="Delete" asp-route-id="@room.Id" class="btn btn-outline-danger" title="Delete Room">
+                                            🗑️ Delete
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

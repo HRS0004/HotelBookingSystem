@@ -1,0 +1,241 @@
+@using Microsoft.AspNetCore.Identity
+@using HotelBooking.Web.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PureStay Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        :root {
+            --admin-sidebar-bg: #1e293b;
+            --admin-sidebar-hover: #334155;
+            --admin-sidebar-active: #0d6efd;
+            --admin-sidebar-text: #e2e8f0;
+            --admin-bg: #f8fafc;
+        }
+        body {
+            background-color: var(--admin-bg);
+            min-height: 100vh;
+        }
+        .admin-sidebar {
+            background-color: var(--admin-sidebar-bg);
+            color: var(--admin-sidebar-text);
+            min-height: calc(100vh - 56px);
+        }
+        .admin-sidebar .nav-link {
+            color: var(--admin-sidebar-text);
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            transition: all 0.15s ease-in-out;
+        }
+        .admin-sidebar .nav-link:hover {
+            background-color: var(--admin-sidebar-hover);
+            color: #fff;
+        }
+        .admin-sidebar .nav-link.active {
+            background-color: var(--admin-sidebar-active);
+            color: #fff;
+            box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+        }
+        .admin-nav-icon {
+            width: 1.5rem;
+            margin-right: 0.75rem;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .stat-card {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            transition: transform 0.15s ease-in-out;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .admin-card {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            background-color: #fff;
+        }
+        .table > :not(caption) > * > * {
+            vertical-align: middle;
+        }
+        .badge-status-confirmed {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+        .badge-status-checkedin {
+            background-color: #198754;
+            color: #fff;
+        }
+        .badge-status-checkedout {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        .badge-status-cancelled {
+            background-color: #dc3545;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Top Navigation Bar -->
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-2 shadow">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button class="navbar-toggler d-md-none collapsed me-2" type="button" data-bs-toggle="collapse" data-bs-target="#adminSidebarMenu" aria-controls="adminSidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <a class="navbar-brand col-md-3 col-lg-2 me-0 px-2 fs-5 fw-bold text-white d-flex align-items-center" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                    <span class="me-2">🏨</span> PureStay <span class="badge bg-primary ms-2 fs-6">Admin</span>
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-outline-light btn-sm" target="_blank" title="Open Public Hotel Website">
+                    🌐 Public Site
+                </a>
+
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <div class="dropdown">
+                        <button class="btn btn-dark dropdown-toggle btn-sm text-light border-secondary" type="button" id="adminUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            👤 @User.Identity?.Name
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="adminUserDropdown">
+                            <li><span class="dropdown-item-text text-muted small">Role: Administrator</span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="d-inline">
+                                    <button type="submit" class="dropdown-item text-danger">🚪 Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Admin Sidebar Navigation -->
+            <nav id="adminSidebarMenu" class="col-md-3 col-lg-2 d-md-block admin-sidebar collapse p-3">
+                <div class="position-sticky pt-2">
+                    <div class="small text-uppercase text-secondary fw-bold px-3 mb-2">Management</div>
+                    <ul class="nav flex-column mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Dashboard" ? "active" : "")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                <span class="admin-nav-icon">📊</span>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Rooms" ? "active" : "")" asp-area="Admin" asp-controller="Rooms" asp-action="Index">
+                                <span class="admin-nav-icon">🛏️</span>
+                                <span>Rooms</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "RoomTypes" ? "active" : "")" asp-area="Admin" asp-controller="RoomTypes" asp-action="Index">
+                                <span class="admin-nav-icon">🏷️</span>
+                                <span>Room Types</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Bookings" ? "active" : "")" asp-area="Admin" asp-controller="Bookings" asp-action="Index">
+                                <span class="admin-nav-icon">📅</span>
+                                <span>Bookings</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <hr class="text-secondary my-3" />
+
+                    <div class="small text-uppercase text-secondary fw-bold px-3 mb-2">Quick Actions</div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="Rooms" asp-action="Create">
+                                <span class="admin-nav-icon">➕</span>
+                                <span>Add Room</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="RoomTypes" asp-action="Create">
+                                <span class="admin-nav-icon">➕</span>
+                                <span>Add Room Type</span>
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <a class="nav-link text-info" asp-area="" asp-controller="Home" asp-action="Index">
+                                <span class="admin-nav-icon">🏠</span>
+                                <span>Back to Home</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Alerts & Notifications -->
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                        <strong>✓ Success!</strong> @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                        <strong>⚠️ Notice:</strong> @TempData["Error"]
+                        @if (TempData["OfferDeactivateRoomId"] != null)
+                        {
+                            <div class="mt-2">
+                                <form asp-area="Admin" asp-controller="Rooms" asp-action="Deactivate" asp-route-id="@TempData["OfferDeactivateRoomId"]" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger fw-bold">
+                                        Deactivate Room @TempData["OfferDeactivateRoomNumber"] Now
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["Warning"] != null)
+                {
+                    <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+                        <strong>⚠️ Warning:</strong> @TempData["Warning"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
