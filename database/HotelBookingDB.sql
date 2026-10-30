@@ -1,4 +1,8 @@
-﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+﻿IF DB_ID(N'HotelBookingDB') IS NULL CREATE DATABASE HotelBookingDB;
+GO
+USE HotelBookingDB;
+GO
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
@@ -362,3 +366,5 @@ GO
 COMMIT;
 GO
 
+GO
+-- Sample data. Users and roles are created by the app on first run (DbSeeder), because password hashes can't be hand-written.

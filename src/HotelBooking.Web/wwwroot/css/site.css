@@ -49,3 +49,9 @@ body {
 .tracking-wide {
   letter-spacing: 0.06em;
 }
+
+/* Keep the footer below the content instead of overlapping it */
+html { position: relative; min-height: 100%; }
+body { margin-bottom: 0 !important; min-height: 100vh; display: flex; flex-direction: column; }
+body > .container, body > main { flex: 1 0 auto; }
+.footer { position: static !important; margin-top: auto; line-height: normal !important; white-space: normal !important; padding: 1.5rem 0; }
