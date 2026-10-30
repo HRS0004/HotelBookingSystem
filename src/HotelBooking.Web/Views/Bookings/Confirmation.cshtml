@@ -1,0 +1,70 @@
+@model BookingConfirmationViewModel
+@{
+    ViewData["Title"] = $"Booking Confirmed - {Model.Reference}";
+}
+
+<div class="container py-5" style="max-width: 750px;">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden text-center">
+        <!-- Header Banner -->
+        <div class="bg-success text-white py-5 px-4">
+            <div class="display-3 mb-2">🎉</div>
+            <h1 class="h2 fw-bold mb-2">Reservation Confirmed!</h1>
+            <p class="lead mb-0 text-white-50">Thank you for booking with Pure Stay Hotel.</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <!-- Reference Box -->
+            <div class="bg-light border rounded-3 p-3 mb-4 d-inline-block w-100">
+                <span class="text-muted small text-uppercase fw-semibold d-block">Booking Reference</span>
+                <span class="fs-3 fw-bold text-primary tracking-wide">@Model.Reference</span>
+            </div>
+
+            <p class="text-muted mb-4">
+                A confirmation has been recorded in your account. You can view or manage this reservation at any time from your bookings dashboard.
+            </p>
+
+            <!-- Reservation Details Table / Grid -->
+            <div class="card border rounded-3 p-3 mb-4 text-start bg-light">
+                <h5 class="fw-bold mb-3 border-bottom pb-2">Reservation Summary</h5>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Room</span>
+                        <strong class="text-dark">Room @Model.RoomNumber (@Model.RoomTypeName)</strong>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Guests</span>
+                        <strong class="text-dark">@Model.Guests Guest@(Model.Guests > 1 ? "s" : "")</strong>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Check-in</span>
+                        <strong class="text-dark">@Model.CheckIn.ToString("dddd, dd MMMM yyyy")</strong>
+                        <div class="text-muted extra-small">After 2:00 PM</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Check-out</span>
+                        <strong class="text-dark">@Model.CheckOut.ToString("dddd, dd MMMM yyyy")</strong>
+                        <div class="text-muted extra-small">Before 11:00 AM</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Duration</span>
+                        <strong class="text-dark">@Model.Nights Night@(Model.Nights > 1 ? "s" : "")</strong>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Total Amount</span>
+                        <strong class="text-primary fs-5">₹@Model.TotalPrice.ToString("N0")</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                <a asp-controller="Bookings" asp-action="Index" class="btn btn-primary btn-lg px-4 fw-semibold">
+                    View My Bookings
+                </a>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

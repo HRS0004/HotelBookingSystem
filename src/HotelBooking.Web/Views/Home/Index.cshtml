@@ -1,8 +1,220 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model HomeIndexViewModel
+@{
+    ViewData["Title"] = "Pure Stay Hotel - Luxury & Comfort";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section text-white rounded-4 p-4 p-md-5 mb-5 shadow">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill text-uppercase fw-bold mb-3 tracking-wide">
+                Welcome to Pure Stay Hotel
+            </span>
+            <h1 class="display-4 fw-bold mb-3">Experience Unmatched Comfort & Serenity</h1>
+            <p class="lead mb-4 text-light opacity-90">
+                Discover our thoughtfully curated rooms and suites, tailored to offer the ultimate relaxing stay in the heart of the city.
+            </p>
+        </div>
+    </div>
+
+    <!-- Search Form Inside Hero -->
+    <div class="search-card bg-white text-dark rounded-3 p-3 p-md-4 mt-3 shadow-lg">
+        <form asp-controller="Home" asp-action="Index" method="get" class="row g-3 align-items-end">
+            <div class="col-12 col-md-4">
+                <label for="checkIn" class="form-label fw-semibold text-secondary small text-uppercase">Check-in Date</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">📅</span>
+                    <input type="date"
+                           id="checkIn"
+                           name="checkIn"
+                           class="form-control border-start-0"
+                           value="@(Model.Search.CheckIn?.ToString("yyyy-MM-dd"))"
+                           min="@Model.Search.MinCheckInDate"
+                           required />
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label for="checkOut" class="form-label fw-semibold text-secondary small text-uppercase">Check-out Date</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">📅</span>
+                    <input type="date"
+                           id="checkOut"
+                           name="checkOut"
+                           class="form-control border-start-0"
+                           value="@(Model.Search.CheckOut?.ToString("yyyy-MM-dd"))"
+                           min="@Model.Search.MinCheckOutDate"
+                           required />
+                </div>
+            </div>
+
+            <div class="col-12 col-md-2">
+                <label for="guests" class="form-label fw-semibold text-secondary small text-uppercase">Guests</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">👥</span>
+                    <input type="number"
+                           id="guests"
+                           name="guests"
+                           class="form-control border-start-0"
+                           value="@Model.Search.Guests"
+                           min="1"
+                           max="10"
+                           required />
+                </div>
+            </div>
+
+            <div class="col-12 col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                    Search
+                </button>
+            </div>
+        </form>
+
+        @if (!string.IsNullOrEmpty(Model.Search.ErrorMessage))
+        {
+            <div class="alert alert-danger mt-3 mb-0 d-flex align-items-center" role="alert">
+                <span class="me-2">⚠️</span>
+                <div>@Model.Search.ErrorMessage</div>
+            </div>
+        }
+    </div>
 </div>
+
+<!-- Search Results Section -->
+<section id="results" class="mb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="h3 fw-bold mb-1">Available Rooms</h2>
+            @if (Model.Search.CheckIn.HasValue && Model.Search.CheckOut.HasValue)
+            {
+                <p class="text-muted mb-0 small">
+                    Stay from <strong>@Model.Search.CheckIn.Value.ToString("dd MMM yyyy")</strong> to <strong>@Model.Search.CheckOut.Value.ToString("dd MMM yyyy")</strong>
+                    (@((Model.Search.CheckOut.Value.DayNumber - Model.Search.CheckIn.Value.DayNumber)) night@((Model.Search.CheckOut.Value.DayNumber - Model.Search.CheckIn.Value.DayNumber) > 1 ? "s" : ""), @Model.Search.Guests guest@(Model.Search.Guests > 1 ? "s" : ""))
+                </p>
+            }
+        </div>
+        <div class="text-muted small">
+            @Model.Rooms.Count room@(Model.Rooms.Count != 1 ? "s" : "") found
+        </div>
+    </div>
+
+    @if (Model.Rooms.Count == 0 && string.IsNullOrEmpty(Model.Search.ErrorMessage))
+    {
+        <!-- Friendly Empty State -->
+        <div class="card border-0 shadow-sm rounded-4 text-center p-5 my-4 bg-light">
+            <div class="card-body py-4">
+                <div class="display-3 mb-3">🏨</div>
+                <h3 class="h4 fw-bold text-dark">No rooms available for these dates</h3>
+                <p class="text-muted mx-auto" style="max-width: 500px;">
+                    We couldn't find any rooms matching your selected dates or guest count. Try modifying your check-in/check-out dates or searching for fewer guests.
+                </p>
+                <div class="mt-3">
+                    <a asp-action="Index" class="btn btn-outline-primary px-4">Reset Search Dates</a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var room in Model.Rooms)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden room-card">
+                        <div class="position-relative">
+                            <img src="@(room.ImageUrl ?? "https://picsum.photos/seed/room" + room.RoomNumber + "/800/500")"
+                                 class="card-img-top room-card-img"
+                                 alt="Room @room.RoomNumber - @room.RoomTypeName"
+                                 loading="lazy" />
+                            <span class="badge bg-dark bg-opacity-75 position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill">
+                                Floor @room.Floor
+                            </span>
+                            <span class="badge bg-primary position-absolute bottom-0 start-0 m-3 px-3 py-2 rounded-pill">
+                                @room.RoomTypeName
+                            </span>
+                        </div>
+
+                        <div class="card-body d-flex flex-column p-4">
+                            <div class="d-flex justify-content-between align-items-baseline mb-2">
+                                <h3 class="h5 fw-bold mb-0">Room @room.RoomNumber</h3>
+                                <span class="text-muted small">Max @room.Capacity Guests</span>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(room.Description))
+                            {
+                                <p class="card-text text-muted small mb-3 flex-grow-1">@room.Description</p>
+                            }
+
+                            <!-- Amenities -->
+                            <div class="mb-3 d-flex flex-wrap gap-1">
+                                @foreach (var amenity in room.Amenities)
+                                {
+                                    <span class="badge bg-light text-secondary border rounded-pill px-2 py-1 small">
+                                        ✓ @amenity
+                                    </span>
+                                }
+                            </div>
+
+                            <!-- Pricing Breakdown -->
+                            <div class="border-top pt-3 mt-auto">
+                                <div class="d-flex justify-content-between align-items-baseline">
+                                    <div>
+                                        <span class="fs-4 fw-bold text-dark">₹@room.PricePerNight.ToString("N0")</span>
+                                        <span class="text-muted small"> / night</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-semibold text-primary">₹@room.TotalPrice.ToString("N0")</div>
+                                        <div class="text-muted extra-small">total for @room.Nights night@(room.Nights > 1 ? "s" : "")</div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mt-3">
+                                    <div class="col-6">
+                                        <a asp-controller="Rooms"
+                                           asp-action="Details"
+                                           asp-route-id="@room.Id"
+                                           asp-route-checkIn="@(Model.Search.CheckIn?.ToString("yyyy-MM-dd"))"
+                                           asp-route-checkOut="@(Model.Search.CheckOut?.ToString("yyyy-MM-dd"))"
+                                           asp-route-guests="@Model.Search.Guests"
+                                           class="btn btn-outline-secondary w-100 fw-semibold">
+                                            Details
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a asp-controller="Bookings"
+                                           asp-action="Confirm"
+                                           asp-route-roomId="@room.Id"
+                                           asp-route-checkIn="@(Model.Search.CheckIn?.ToString("yyyy-MM-dd"))"
+                                           asp-route-checkOut="@(Model.Search.CheckOut?.ToString("yyyy-MM-dd"))"
+                                           asp-route-guests="@Model.Search.Guests"
+                                           class="btn btn-primary w-100 fw-semibold">
+                                            Book
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@section Scripts {
+    <script>
+        // Update check-out min date dynamically when check-in date changes
+        document.getElementById('checkIn')?.addEventListener('change', function () {
+            const checkInVal = this.value;
+            const checkOutInput = document.getElementById('checkOut');
+            if (checkInVal && checkOutInput) {
+                const checkInDate = new Date(checkInVal);
+                checkInDate.setDate(checkInDate.getDate() + 1);
+                const nextDayStr = checkInDate.toISOString().split('T')[0];
+                checkOutInput.min = nextDayStr;
+                if (checkOutInput.value && checkOutInput.value <= checkInVal) {
+                    checkOutInput.value = nextDayStr;
+                }
+            }
+        });
+    </script>
+}

@@ -18,5 +18,34 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #0d3b66 0%, #001e3d 100%);
+}
+
+/* Room Cards */
+.room-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.room-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.75rem 1.75rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.room-card-img {
+  height: 220px;
+  object-fit: cover;
+}
+
+.extra-small {
+  font-size: 0.75rem;
+}
+
+.tracking-wide {
+  letter-spacing: 0.06em;
 }

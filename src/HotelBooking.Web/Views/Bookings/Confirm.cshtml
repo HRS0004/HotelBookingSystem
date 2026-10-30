@@ -1,0 +1,146 @@
+@model BookingConfirmViewModel
+@{
+    ViewData["Title"] = "Confirm Reservation - Pure Stay Hotel";
+}
+
+<div class="container py-4" style="max-width: 900px;">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Rooms" asp-action="Details" asp-route-id="@Model.RoomId">Room @Model.RoomNumber</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Confirm Reservation</li>
+        </ol>
+    </nav>
+
+    <h1 class="h3 fw-bold mb-4">Review & Confirm Your Reservation</h1>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger shadow-sm mb-4 d-flex align-items-center" role="alert">
+            <span class="fs-4 me-3">⚠️</span>
+            <div>
+                <strong class="d-block">Booking Notice:</strong>
+                @Model.ErrorMessage
+            </div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Stay & Room Summary -->
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <img src="@(Model.ImageUrl ?? "https://picsum.photos/seed/room" + Model.RoomNumber + "/800/500")"
+                     class="card-img-top"
+                     style="height: 220px; object-fit: cover;"
+                     alt="Room @Model.RoomNumber" />
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-primary rounded-pill px-3 py-2">@Model.RoomTypeName</span>
+                        <span class="text-muted small">Floor @Model.Floor</span>
+                    </div>
+                    <h2 class="h4 fw-bold mb-3">Room @Model.RoomNumber</h2>
+
+                    <div class="mb-3 d-flex flex-wrap gap-1">
+                        @foreach (var amenity in Model.Amenities)
+                        {
+                            <span class="badge bg-light text-secondary border rounded-pill px-2 py-1 small">
+                                ✓ @amenity
+                            </span>
+                        }
+                    </div>
+
+                    <hr />
+
+                    <h5 class="h6 fw-bold text-uppercase text-secondary mb-3">Stay Details</h5>
+                    <div class="row g-2 small">
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded border">
+                                <div class="text-muted">Check-in:</div>
+                                <div class="fw-bold fs-6">@Model.CheckIn.ToString("dd MMM yyyy")</div>
+                                <div class="text-muted extra-small">From 2:00 PM</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded border">
+                                <div class="text-muted">Check-out:</div>
+                                <div class="fw-bold fs-6">@Model.CheckOut.ToString("dd MMM yyyy")</div>
+                                <div class="text-muted extra-small">By 11:00 AM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 small text-muted">
+                        <span>Total Stay: <strong>@Model.Nights night@(Model.Nights > 1 ? "s" : "")</strong></span>
+                        <span class="mx-2">•</span>
+                        <span>Guests: <strong>@Model.Guests</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guest Information -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="h6 fw-bold text-uppercase text-secondary mb-3">Guest Information</h5>
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                        👤
+                    </div>
+                    <div>
+                        <div class="fw-bold">@Model.GuestName</div>
+                        <div class="text-muted small">@Model.GuestEmail</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing and Confirm Action -->
+        <div class="col-md-5">
+            <div class="card border-0 shadow rounded-4 p-4 sticky-top" style="top: 2rem;">
+                <h4 class="h5 fw-bold mb-3">Payment & Price Summary</h4>
+
+                <div class="d-flex justify-content-between text-muted mb-2">
+                    <span>₹@Model.PricePerNight.ToString("N0") × @Model.Nights night@(Model.Nights > 1 ? "s" : "")</span>
+                    <span class="fw-semibold text-dark">₹@Model.TotalPrice.ToString("N0")</span>
+                </div>
+
+                <div class="d-flex justify-content-between text-muted mb-3">
+                    <span>Taxes & Service Fees</span>
+                    <span class="text-success fw-semibold">Included</span>
+                </div>
+
+                <hr class="my-2" />
+
+                <div class="d-flex justify-content-between align-items-baseline mb-4">
+                    <span class="fw-bold text-dark fs-5">Total Amount</span>
+                    <span class="display-6 fw-bold text-primary">₹@Model.TotalPrice.ToString("N0")</span>
+                </div>
+
+                <div class="alert alert-light border small text-muted mb-4">
+                    🔒 Free cancellation up to 24 hours before 2:00 PM on check-in date. No hidden fees.
+                </div>
+
+                <form asp-controller="Bookings" asp-action="Confirm" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="RoomId" value="@Model.RoomId" />
+                    <input type="hidden" name="CheckIn" value="@Model.CheckIn.ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="CheckOut" value="@Model.CheckOut.ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="Guests" value="@Model.Guests" />
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                            Confirm & Reserve Now
+                        </button>
+                        <a asp-controller="Rooms"
+                           asp-action="Details"
+                           asp-route-id="@Model.RoomId"
+                           asp-route-checkIn="@Model.CheckIn.ToString("yyyy-MM-dd")"
+                           asp-route-checkOut="@Model.CheckOut.ToString("yyyy-MM-dd")"
+                           asp-route-guests="@Model.Guests"
+                           class="btn btn-outline-secondary">
+                            Modify Stay Dates
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

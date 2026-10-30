@@ -1,0 +1,55 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Log in - Pure Stay Hotel";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="card border-0 shadow rounded-4 p-4 p-md-5">
+            <div class="text-center mb-4">
+                <span class="fs-1">🏨</span>
+                <h1 class="h3 fw-bold text-dark mt-2">Welcome Back</h1>
+                <p class="text-muted small">Sign in to your Pure Stay Hotel account</p>
+            </div>
+
+            <form id="account" method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Email" class="form-label fw-semibold small text-secondary"></label>
+                    <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
+                    <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Password" class="form-label fw-semibold small text-secondary"></label>
+                    <input asp-for="Input.Password" class="form-control" autocomplete="current-password" placeholder="••••••••" />
+                    <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input" asp-for="Input.RememberMe" />
+                    <label class="form-check-label small text-secondary" asp-for="Input.RememberMe">
+                        @Html.DisplayNameFor(m => m.Input.RememberMe)
+                    </label>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button id="login-submit" type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                        Log in
+                    </button>
+                </div>
+
+                <div class="text-center small text-muted">
+                    Don't have an account?
+                    <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-primary fw-semibold text-decoration-none">Register as guest</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

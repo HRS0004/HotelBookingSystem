@@ -1,0 +1,177 @@
+@model RoomDetailsViewModel
+@{
+    ViewData["Title"] = $"Room {Model.RoomNumber} ({Model.RoomTypeName}) - Pure Stay Hotel";
+}
+
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Room @Model.RoomNumber</li>
+    </ol>
+</nav>
+
+@if (!string.IsNullOrEmpty(Model.Search.ErrorMessage))
+{
+    <div class="alert alert-danger shadow-sm mb-4">
+        ⚠️ @Model.Search.ErrorMessage
+    </div>
+}
+
+<div class="row g-4 mb-5">
+    <!-- Left Column: Room Details -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <img src="@(Model.ImageUrl ?? "https://picsum.photos/seed/room" + Model.RoomNumber + "/800/500")"
+                 class="img-fluid w-100"
+                 style="max-height: 450px; object-fit: cover;"
+                 alt="Room @Model.RoomNumber - @Model.RoomTypeName" />
+
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <div>
+                        <span class="badge bg-primary px-3 py-2 rounded-pill me-2">@Model.RoomTypeName</span>
+                        <span class="badge bg-secondary px-3 py-2 rounded-pill">Floor @Model.Floor</span>
+                    </div>
+                    <div class="text-muted small">
+                        Accommodates up to <strong>@Model.Capacity guests</strong>
+                    </div>
+                </div>
+
+                <h1 class="h2 fw-bold text-dark mb-3">Room @Model.RoomNumber - @Model.RoomTypeName</h1>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <p class="lead text-secondary mb-4 fs-6">
+                        @Model.Description
+                    </p>
+                }
+
+                <hr class="my-4" />
+
+                <h4 class="h5 fw-bold mb-3">Room Amenities & Features</h4>
+                <div class="row g-3">
+                    @foreach (var amenity in Model.Amenities)
+                    {
+                        <div class="col-6 col-md-4">
+                            <div class="d-flex align-items-center p-3 bg-light rounded-3 border">
+                                <span class="fs-5 me-2 text-success">✓</span>
+                                <span class="fw-semibold text-dark">@amenity</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <hr class="my-4" />
+
+                <h4 class="h5 fw-bold mb-3">Hotel Policies & Information</h4>
+                <ul class="text-muted small mb-0 ps-3">
+                    <li>Check-in begins at 2:00 PM.</li>
+                    <li>Check-out is by 11:00 AM.</li>
+                    <li>Free cancellation up to 24 hours before 2:00 PM on the check-in date.</li>
+                    <li>Complimentary high-speed WiFi and hotel assistance throughout your stay.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Booking Form -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow rounded-4 sticky-top" style="top: 2rem;">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <span class="text-muted small text-uppercase fw-semibold">Price per night</span>
+                    <div class="d-flex align-items-baseline">
+                        <span class="display-6 fw-bold text-dark">₹@Model.PricePerNight.ToString("N0")</span>
+                        <span class="text-muted ms-2">/ night</span>
+                    </div>
+                </div>
+
+                <hr class="my-3" />
+
+                <h5 class="fw-bold mb-3">Reserve This Room</h5>
+
+                <!-- Booking form carrying dates and guests -->
+                <form asp-controller="Bookings" asp-action="Confirm" method="get">
+                    <input type="hidden" name="roomId" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <label for="detailCheckIn" class="form-label fw-semibold small text-secondary">Check-in Date</label>
+                        <input type="date"
+                               id="detailCheckIn"
+                               name="checkIn"
+                               class="form-control"
+                               value="@(Model.Search.CheckIn?.ToString("yyyy-MM-dd"))"
+                               min="@Model.Search.MinCheckInDate"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="detailCheckOut" class="form-label fw-semibold small text-secondary">Check-out Date</label>
+                        <input type="date"
+                               id="detailCheckOut"
+                               name="checkOut"
+                               class="form-control"
+                               value="@(Model.Search.CheckOut?.ToString("yyyy-MM-dd"))"
+                               min="@Model.Search.MinCheckOutDate"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="detailGuests" class="form-label fw-semibold small text-secondary">Guests</label>
+                        <input type="number"
+                               id="detailGuests"
+                               name="guests"
+                               class="form-control"
+                               value="@Model.Search.Guests"
+                               min="1"
+                               max="@Model.Capacity"
+                               required />
+                        <div class="form-text">Max capacity for this room: @Model.Capacity guests.</div>
+                    </div>
+
+                    @if (Model.Nights.HasValue && Model.TotalPrice.HasValue)
+                    {
+                        <div class="bg-light p-3 rounded-3 mb-3 border">
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span>₹@Model.PricePerNight.ToString("N0") × @Model.Nights.Value night@(Model.Nights.Value > 1 ? "s" : "")</span>
+                                <span>₹@Model.TotalPrice.Value.ToString("N0")</span>
+                            </div>
+                            <hr class="my-2" />
+                            <div class="d-flex justify-content-between fw-bold text-dark">
+                                <span>Total (INR)</span>
+                                <span class="text-primary fs-5">₹@Model.TotalPrice.Value.ToString("N0")</span>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                            Proceed to Booking
+                        </button>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                            Back to All Rooms
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('detailCheckIn')?.addEventListener('change', function () {
+            const checkInVal = this.value;
+            const checkOutInput = document.getElementById('detailCheckOut');
+            if (checkInVal && checkOutInput) {
+                const checkInDate = new Date(checkInVal);
+                checkInDate.setDate(checkInDate.getDate() + 1);
+                const nextDayStr = checkInDate.toISOString().split('T')[0];
+                checkOutInput.min = nextDayStr;
+                if (checkOutInput.value && checkOutInput.value <= checkInVal) {
+                    checkOutInput.value = nextDayStr;
+                }
+            }
+        });
+    </script>
+}
